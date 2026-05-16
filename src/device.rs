@@ -1,4 +1,4 @@
-//! ネットワークデバイスの抽象化。
+//! ネットワークデバイスの抽象化
 //!
 //! - `Device`: 1つのネットワークインターフェースを表す
 //! - `Ops`: ドライバが実装するトレイト (open / close / transmit)
@@ -22,8 +22,8 @@ pub const FLAG_BROADCAST: u16 = 0x0020;
 pub const FLAG_P2P: u16 = 0x0040;
 pub const FLAG_NEED_ARP: u16 = 0x0100;
 
-/// デバイスドライバが実装するトレイト。
-/// open/close はデフォルト実装で何もしない。
+/// デバイスドライバが実装するトレイト
+/// open/close はデフォルト実装で何もしない
 pub trait Ops: Send + Sync {
     fn open(&self, _dev: &Device) -> Result<(), ()> {
         Ok(())
@@ -33,22 +33,22 @@ pub trait Ops: Send + Sync {
         Ok(())
     }
 
-    /// フレームを送信する。
+    /// フレームを送信する
     /// `ty`: プロトコル種別 (EtherType)
     /// `data`: ペイロード
     /// `dst`: 宛先ハードウェアアドレス
     fn transmit(&self, dev: &Device, ty: u16, data: &[u8], dst: &[u8]) -> Result<(), ()>;
 }
 
-/// ネットワークデバイス。
-/// 1つの物理/仮想インターフェースに対応する。
+/// ネットワークデバイス
+/// 1つの物理/仮想インターフェースに対応する
 pub struct Device {
     pub index: usize,
     pub name: String,
     pub ty: u16,
     pub mtu: u16,
-    pub hlen: u16,  // ヘッダ長
-    pub alen: u16,  // アドレス長
+    pub hlen: u16, // ヘッダ長
+    pub alen: u16, // アドレス長
     pub addr: Mutex<[u8; ADDR_LEN]>,
     pub peer: [u8; ADDR_LEN],
     pub broadcast: [u8; ADDR_LEN],
@@ -82,10 +82,14 @@ impl Device {
     }
 
     fn state_str(&self) -> &'static str {
-        if self.is_up() { "UP" } else { "DOWN" }
+        if self.is_up() {
+            "UP"
+        } else {
+            "DOWN"
+        }
     }
 
-    /// デバイスを起動する。
+    /// デバイスを起動する
     pub fn open(&self) -> Result<(), ()> {
         if self.is_up() {
             log::error!("already opened: dev={}", self.name);
@@ -99,7 +103,7 @@ impl Device {
         Ok(())
     }
 
-    /// デバイスを停止する。
+    /// デバイスを停止する
     pub fn close(&self) -> Result<(), ()> {
         if !self.is_up() {
             log::error!("not opened: dev={}", self.name);
@@ -113,7 +117,7 @@ impl Device {
         Ok(())
     }
 
-    /// フレームを送信する。MTUチェック付き。
+    /// フレームを送信する。MTUチェック付き
     pub fn output(&self, ty: u16, data: &[u8], dst: &[u8]) -> Result<(), ()> {
         if !self.is_up() {
             log::error!("not opened: dev={}", self.name);
@@ -122,11 +126,18 @@ impl Device {
         if data.len() > self.mtu as usize {
             log::error!(
                 "too long: dev={}, mtu={}, len={}",
-                self.name, self.mtu, data.len()
+                self.name,
+                self.mtu,
+                data.len()
             );
             return Err(());
         }
-        log::debug!("output: dev={}, type=0x{:04x}, len={}", self.name, ty, data.len());
+        log::debug!(
+            "output: dev={}, type=0x{:04x}, len={}",
+            self.name,
+            ty,
+            data.len()
+        );
         log::trace!("\n{}", crate::util::HexDump(data));
         self.ops.transmit(self, ty, data, dst).map_err(|_| {
             log::error!("transmit failed: dev={}", self.name);
@@ -137,7 +148,7 @@ impl Device {
 /// グローバルなデバイスリスト
 static DEVICES: Mutex<Vec<Arc<Device>>> = Mutex::new(Vec::new());
 
-/// デバイスを登録し、index と name を自動付与する。
+/// デバイスを登録し、index と name を自動付与する
 pub fn register(mut dev: Device) -> Arc<Device> {
     let mut devices = DEVICES.lock().unwrap();
     dev.index = devices.len();
