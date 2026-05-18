@@ -159,19 +159,19 @@ pub fn register(mut dev: Device) -> Arc<Device> {
     arc
 }
 
-/// index でデバイスを取得する。
+/// index でデバイスを取得する
 pub fn by_index(index: usize) -> Option<Arc<Device>> {
     DEVICES.lock().unwrap().get(index).cloned()
 }
 
-/// 全デバイスに対して関数を実行する。
+/// 全デバイスに対して関数を実行する
 pub fn foreach<F: FnMut(&Device)>(mut f: F) {
     for dev in DEVICES.lock().unwrap().iter() {
         f(dev);
     }
 }
 
-/// 全デバイスに対して関数を実行し、エラーがあれば即座に返す。
+/// 全デバイスに対して関数を実行し、エラーがあれば即座に返す
 pub fn try_foreach<F: FnMut(&Device) -> Result<(), ()>>(mut f: F) -> Result<(), ()> {
     for dev in DEVICES.lock().unwrap().iter() {
         f(dev)?;

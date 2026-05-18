@@ -93,7 +93,10 @@ pub fn softirq_handler() {
         };
         let handler = {
             let protocols = PROTOCOLS.lock().unwrap();
-            protocols.iter().find(|p| p.ty == entry.ty).map(|p| p.handler)
+            protocols
+                .iter()
+                .find(|p| p.ty == entry.ty)
+                .map(|p| p.handler)
         };
         if let Some(handler) = handler {
             handler(&entry.data, &entry.dev);
