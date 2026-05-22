@@ -1,14 +1,8 @@
-//ユーティリティ関数
-//!
-//! - `cksum16`: RFC 1071 インターネットチェックサム
-//! - `HexDump`: パケットの16進ダンプ表示
+//! ユーティリティ関数
 
 use std::fmt;
 
-/// RFC 1071 インターネットチェックサム
-/// IP, ICMP, TCP, UDP のヘッダ/データ検証に使う
-///
-/// `init` に前半の部分和 (ビット反転前) を渡すと、 分割計算ができる
+/// RFC 1071 インターネットチェックサム。
 pub fn cksum16(data: &[u8], init: u32) -> u16 {
     let mut sum = init;
     let mut i = 0;
@@ -25,7 +19,7 @@ pub fn cksum16(data: &[u8], init: u32) -> u16 {
     !(sum as u16)
 }
 
-/// バイト列を見やすい16進ダンプとして表示するフォーマッタ
+/// バイト列を16進ダンプとして表示する。
 pub struct HexDump<'a>(pub &'a [u8]);
 
 impl fmt::Display for HexDump<'_> {
@@ -70,7 +64,6 @@ impl fmt::Display for HexDump<'_> {
 mod tests {
     use super::*;
 
-    // microps-rs のテストデータ: IP(20B) + ICMP(28B)
     const TEST_DATA: &[u8] = &[
         0x45, 0x00, 0x00, 0x30, 0x00, 0x80, 0x00, 0x00, 0xff, 0x01, 0xbd, 0x4a, 0x7f, 0x00, 0x00,
         0x01, 0x7f, 0x00, 0x00, 0x01, 0x08, 0x00, 0x35, 0x64, 0x00, 0x80, 0x00, 0x01, 0x31, 0x32,
