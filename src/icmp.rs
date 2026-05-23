@@ -79,7 +79,7 @@ fn type_name(ty: u8) -> &'static str {
     }
 }
 
-/// ICMP パケットを送信する。
+/// ICMP パケットを送信する
 pub fn output(
     ty: u8,
     code: u8,
@@ -108,7 +108,7 @@ pub fn output(
     ip::output(IP_PROTOCOL_ICMP, &buf, src, dst)
 }
 
-/// ICMP 入力ハンドラ。IP 層から呼ばれる。
+/// ICMP 入力ハンドラ。IP 層から呼ばれる
 fn input(hdr: &IpHdr<'_>, data: &[u8], iface: &IpIface) {
     log::debug!(
         "icmp: input: {} => {}, dev={}, len={}",
